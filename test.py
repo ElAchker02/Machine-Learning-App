@@ -309,13 +309,7 @@ class App(customtkinter.CTk):
 
         model_table.grid(row=0, column=0, sticky="nsew")
 
-        # Add scrollbars to the model_frame
-        model_vscroll = ttk.Scrollbar(model_frame, orient="vertical", command=model_frame.yview)
-        model_hscroll = ttk.Scrollbar(model_frame, orient="horizontal", command=model_frame.xview)
-        model_frame.configure(yscrollcommand=model_vscroll.set, xscrollcommand=model_hscroll.set)
 
-        model_vscroll.grid(row=0, column=1, sticky="ns")
-        model_hscroll.grid(row=1, column=0, sticky="ew")
 
         model_frame.grid_rowconfigure(1, weight=1)
         model_frame.grid_columnconfigure(0, weight=1)
