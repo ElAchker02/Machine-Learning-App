@@ -61,7 +61,7 @@ class App(customtkinter.CTk):
         
         # Configure grid layout for the main window
         self.grid_columnconfigure(0, minsize=140)  # Sidebar width
-        self.grid_columnconfigure(1, weight=0)      # Main content area
+        self.grid_columnconfigure(1, weight=1)      # Main content area
         self.grid_rowconfigure(0, weight=1)         # Only the first row expands by default
 
         # Create sidebar frame with widgets
@@ -204,10 +204,8 @@ class App(customtkinter.CTk):
         button_prev.grid(row=0, column=0, padx=10)
 
         # Button to go to the columns form view
-        button_next = customtkinter.CTkButton(buttons_frame, text="Next", command=self.show_columns_form_view)
+        button_next = customtkinter.CTkButton(buttons_frame, text="Next", command=self.show_models_view)
         button_next.grid(row=0, column=1, padx=10)
-        
-
 
         return checkbox_frame
 
@@ -260,8 +258,8 @@ class App(customtkinter.CTk):
             self.show_upload_view()
             return
 
-        model_frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent" , bg_color="red")
-        model_frame.grid(row=0, column=0, sticky="nsew")  # Assuming you are using grid layout
+        model_frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent")
+        model_frame.grid(row=0, column=0, sticky="nsew")
 
         # Title
         title_label = customtkinter.CTkLabel(model_frame, text="Dataset and Model Information", font=("Helvetica", 20, "bold"))
@@ -276,46 +274,49 @@ class App(customtkinter.CTk):
 
         for col in self.df.columns:
             dataset_table.heading(col, text=col)
-            dataset_table.column(col, anchor="center",width=100)
+            dataset_table.column(col, anchor="center", width=100)
 
         for index, row in self.df.iterrows():
             dataset_table.insert("", "end", values=list(row))
 
         dataset_table.grid(row=0, column=0, sticky="nsew")
 
-        # Create model statistics table
+        # Create model statistics table with custom layout
         model_table_frame = customtkinter.CTkFrame(model_frame, fg_color="transparent")
         model_table_frame.grid(row=2, column=0, columnspan=3, pady=20, padx=10, sticky="nsew")
 
-        model_table = ttk.Treeview(model_table_frame, columns=("Model", "Accuracy", "Model Loss"), show="headings")
-        model_table.heading("Model", text="Model")
-        model_table.heading("Accuracy", text="Accuracy")
-        model_table.heading("Model Loss", text="Model Loss")
+        # Add header for the model table
+        # headers = ["Model", "Accuracy", "Model Loss"]
+        headers = ["Model", "Action", "Accuracy"]
 
-        model_table.column("Model", anchor="center", width=100)
-        model_table.column("Accuracy", anchor="center", width=100)
-        model_table.column("Model Loss", anchor="center", width=100)
+        for col, header in enumerate(headers):
+            header_label = customtkinter.CTkLabel(model_table_frame, text=header, font=("Helvetica", 12, "bold"))
+            header_label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
 
-        # Add sample data to the model table
+        # Add model information, predict button, accuracy, and model loss
         for i in range(1, 4):  # Assuming we have 3 models for demonstration
             model_name = f"Model #{i}"
-            target_name = self.target if self.target else "Not Set"
+            target_name = self.target if hasattr(self, 'target') else "Not Set"
             model_label = f"{model_name}, Target: {target_name}"
-            accuracy = f"{i * 10}%"  # Placeholder accuracy
-            model_loss = f"{i * 0.1:.2f}"  # Placeholder model loss
+            accuracy = f"{i * 10}%"
+            model_loss = f"{i * 0.1:.2f}"
 
-            # Insert a row with a predict button
-            model_table.insert("", "end", values=(model_label, accuracy, model_loss))
+            # Add model label
+            model_label_widget = customtkinter.CTkLabel(model_table_frame, text=model_label)
+            model_label_widget.grid(row=i, column=0, padx=10, pady=5, sticky="w")
 
-        model_table.grid(row=0, column=0, sticky="nsew")
+            # Add predict button
+            predict_button = customtkinter.CTkButton(model_table_frame, text="PREDICT", command=lambda m=model_name: self.predict_model(m))
+            predict_button.grid(row=i, column=1, padx=10, pady=5, sticky="w")
 
-
+            # Add model loss label
+            loss_label = customtkinter.CTkLabel(model_table_frame, text=accuracy)
+            loss_label.grid(row=i, column=2, padx=10, pady=5, sticky="w")
 
         model_frame.grid_rowconfigure(1, weight=1)
         model_frame.grid_columnconfigure(0, weight=1)
 
         return model_frame
-
 
 
     def predict(self, model_name):
