@@ -9,6 +9,8 @@ import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from sklearn.model_selection import train_test_split
 from Visualisation import DataVisualizerClass
+
+
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -224,6 +226,7 @@ class App(customtkinter.CTk):
 
         # Descriptions of the statistics
         descriptions = [
+            ("General Information", "General Information about Dataset."),
             ("Histogram", "Shows the distribution of a single column."),
             ("Bar Chart", "Displays the count of unique values in a categorical column."),
             ("Box Plot", "Displays the distribution and outliers of numerical columns."),
@@ -247,35 +250,42 @@ class App(customtkinter.CTk):
             desc_text.grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
             action_button = customtkinter.CTkButton(table_frame, text=desc, command=lambda d=desc: self.show_visualization(d))
             action_button.grid(row=i+1, column=1, padx=10, pady=5)
+        
+        # def on_close():
+        #     statistics_window.destroy()
+
+        # statistics_window.protocol("WM_DELETE_WINDOW", on_close)
 
     def show_visualization(self, desc):
 
         if desc == "Histogram":
             DataVisualizerClass.show_histograms_view(self,self.dfPreprocessed)
         elif desc == "Bar Chart":
-            pass
+            DataVisualizerClass.show_bar_charts_view(self,self.dfPreprocessed)
 
         elif desc == "Box Plot":
-            pass
+            DataVisualizerClass.show_box_plots_view(self,self.dfPreprocessed)
 
         elif desc == "Scatter Plot":
-            pass
+            DataVisualizerClass.show_scatter_plots_view(self,self.dfPreprocessed)
         
         elif desc == "Pair Plot":
-            pass
+            DataVisualizerClass.show_pair_plot_view(self,self.dfPreprocessed)
 
         elif desc == "Pie Chart":
-            DataVisualizerClass.show_pie_chart_view(self,self.dfPreprocessed)
+            DataVisualizerClass.show_pie_chart_view(self)# later
 
         elif desc == "Heatmap":
             DataVisualizerClass.show_heatmap_view(self,self.dfPreprocessed)
 
         elif desc == "Line Plot":
-            pass
+            DataVisualizerClass.show_line_plot_view(self,self.dfPreprocessed)
 
         elif desc == "Violin Plot":
-            pass
+            DataVisualizerClass.show_violin_plots_view(self,self.dfPreprocessed)
 
+        elif desc == "General Information":
+            DataVisualizerClass.show_general_info(self)
 
     def AlgorithmChosen(self, algorithm):
         result = None
