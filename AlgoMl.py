@@ -12,12 +12,38 @@ import scipy.cluster.hierarchy as sch
 from sklearn.metrics import silhouette_score, mean_squared_error, confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 class AlgoML:
     def __init__(self):
         pass
 
     @staticmethod
+    # def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
+    #     # Initialize a dictionary to store original and encoded values
+    #     encoding_dict = {}
+
+    #     # Handle missing values
+    #     if handle_missing_values:
+    #         # Fill numerical columns with the mean
+    #         for col in df.select_dtypes(include=[np.number]).columns:
+    #             if df[col].isnull().sum() > 0:
+    #                 df[col] = df[col].fillna(df[col].mean())
+
+    #         # Fill categorical columns with the mode
+    #         for col in df.select_dtypes(include=[object]).columns:
+    #             if df[col].isnull().sum() > 0:
+    #                 df[col] = df[col].fillna(df[col].mode()[0])
+
+    #     # Encode categorical variables
+    #     if encode_categorical:
+    #         label_encoder = LabelEncoder()
+    #         for col in df.select_dtypes(include=['object']).columns:
+    #             df[col] = label_encoder.fit_transform(df[col])
+    #             # Store the original and encoded values in the dictionary
+    #             encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+
+    #     return df, encoding_dict
     def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
             # Initialize a dictionary to store original and encoded values
             encoding_dict = {}
@@ -132,11 +158,7 @@ class AlgoML:
             pca_variance = pca.explained_variance_ratio_.sum()
             results['PCA Variance Explained'] = pca_variance
             
-            tsne = TSNE(n_components=2)
-            tsne_result = tsne.fit_transform(df)
-            results['t-SNE'] = 'Performed'
 
-            # Since t-SNE doesn't provide a direct score, it is not compared here
             best_model = max(results, key=results.get)
             print('Best Clustering Model:', best_model, results[best_model])
         
@@ -300,6 +322,39 @@ class AlgoML:
         # Predict the target value using the trained model
         prediction = AlgoML.predict_with_model(model, form_input)
         return prediction
+
+    # Unsupervised
+    @staticmethod
+    def DBSCANClusteringModel(df, feat, eps=0.5, min_samples=5):
+        # Extract the features for clustering
+        X = df[feat]
+
+        # Standardize the features
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+
+        # Apply DBSCAN
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+        dbscan.fit(X_scaled)
+
+        # Get the cluster labels
+        labels = dbscan.labels_
+        
+        # Append the labels to the original dataframe
+        df['Cluster'] = labels
+
+        return df, dbscan, scaler
+
+    @staticmethod
+    def predict_with_model_DBSCAN(model, scaler, features):
+        # Standardize the input features
+        features_scaled = scaler.transform(np.array(features).reshape(1, -1))
+        
+        # Predict the cluster for the new features
+        prediction = model.fit_predict(features_scaled)
+        return prediction[0]
+
+    
 
     @staticmethod
     def predict_with_model(model, features):

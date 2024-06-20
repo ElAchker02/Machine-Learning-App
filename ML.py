@@ -4,8 +4,11 @@ import pandas as pd
 import customtkinter
 from tkinter import ttk
 from AlgoMl import AlgoML
-
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from sklearn.model_selection import train_test_split
+from Visualisation import DataVisualizerClass
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -43,7 +46,7 @@ class App(customtkinter.CTk):
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Data", command=self.show_upload_view)
         self.sidebar_button_1.pack(padx=20, pady=10, anchor="w")
 
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="List of \nDatasets", command=self.show_models_view)
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Show Statistics", command=self.show_statistics)
         self.sidebar_button_2.pack(padx=20, pady=10, anchor="w")
 
         # Create main content area
@@ -63,17 +66,6 @@ class App(customtkinter.CTk):
         
         # Show the default view
         self.show_upload_view()
-
-    def open_new_window(self):
-        new_window = customtkinter.CTkToplevel(self)
-        new_window.title("New Window")
-        new_window.geometry("300x200")
-
-        label = customtkinter.CTkLabel(new_window, text="This is a new window", font=("Helvetica", 20, "bold"))
-        label.pack(pady=20)
-
-        close_button = customtkinter.CTkButton(new_window, text="Close", command=new_window.destroy)
-        close_button.pack(pady=20)
 
     def create_upload_view(self):
         frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent")
@@ -217,8 +209,72 @@ class App(customtkinter.CTk):
         self.prediction = customtkinter.CTkLabel(form_frame, text=f"Prediction of target {self.target} is ")
         self.prediction.grid(row=(len(self.selected_columns) // 2) + 3, column=0, columnspan=2, padx=10, pady=10, sticky="w")
 
+
+
         return form_frame
 
+    def show_statistics(self):
+        # Create a new window for statistics
+        statistics_window = tk.Toplevel(self.main_content_frame)
+        statistics_window.title("Data Statistics")
+
+        # Frame for the table
+        table_frame = customtkinter.CTkFrame(statistics_window)
+        table_frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        # Descriptions of the statistics
+        descriptions = [
+            ("Histogram", "Shows the distribution of a single column."),
+            ("Bar Chart", "Displays the count of unique values in a categorical column."),
+            ("Box Plot", "Displays the distribution and outliers of numerical columns."),
+            ("Scatter Plot", "Shows the relationship between two columns."),
+            ("Pair Plot", "Displays pairwise relationships and distributions for all columns."),
+            ("Pie Chart", "Displays the percentage distribution of categories in a categorical column."),
+            ("Heatmap", "Displays the correlation between numerical columns."),
+            ("Line Plot", "Shows the trend of numerical columns over a continuous interval."),
+            ("Violin Plot", "Displays the distribution of numerical data across different categories.")
+        ]
+
+        # Add table headers
+        desc_label = customtkinter.CTkLabel(table_frame, text="Description", font=("Helvetica", 15, "bold"))
+        desc_label.grid(row=0, column=0, padx=10, pady=5)
+        action_label = customtkinter.CTkLabel(table_frame, text="Action", font=("Helvetica", 15, "bold"))
+        action_label.grid(row=0, column=1, padx=10, pady=5)
+
+        # Add rows for each description and button
+        for i, (desc, detail) in enumerate(descriptions):
+            desc_text = customtkinter.CTkLabel(table_frame, text=detail)
+            desc_text.grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
+            action_button = customtkinter.CTkButton(table_frame, text=desc, command=lambda d=desc: self.show_visualization(d))
+            action_button.grid(row=i+1, column=1, padx=10, pady=5)
+
+    def show_visualization(self, desc):
+
+        if desc == "Histogram":
+            DataVisualizerClass.show_histograms_view(self,self.dfPreprocessed)
+        elif desc == "Bar Chart":
+            pass
+
+        elif desc == "Box Plot":
+            pass
+
+        elif desc == "Scatter Plot":
+            pass
+        
+        elif desc == "Pair Plot":
+            pass
+
+        elif desc == "Pie Chart":
+            DataVisualizerClass.show_pie_chart_view(self,self.dfPreprocessed)
+
+        elif desc == "Heatmap":
+            DataVisualizerClass.show_heatmap_view(self,self.dfPreprocessed)
+
+        elif desc == "Line Plot":
+            pass
+
+        elif desc == "Violin Plot":
+            pass
 
 
     def AlgorithmChosen(self, algorithm):
@@ -239,22 +295,22 @@ class App(customtkinter.CTk):
             case "K-Means":
                 pass
             case "DBSCAN":
-                pass
+                # Apply DBSCAN clustering
+                clustered_df, dbscan_model, scaler = AlgoML.DBSCANClusteringModel(self.dfPreprocessed, self.selected_columns, eps=0.3, min_samples=2)
+                print(clustered_df['Cluster'])
+
+                # Predict the cluster for a new data point
+                inputs = [float(value) for value in self.inputs]
+                cluster_label = AlgoML.predict_with_model_DBSCAN(dbscan_model, scaler, inputs)
+                print(f"The input belongs to cluster: {cluster_label}")
+                
+                result = cluster_label
             case "PCA Variance Explained":
                 pass
             case "t-SNE":
                 pass
         
         return result
-
-    # def submit_form(self):
-    #     # form_data = {col: self.entry_widgets[col].get() for col in self.selected_columns}
-    #     form_data = []
-    #     for col in self.selected_columns:
-    #         form_data.append(self.entry_widgets[col].get())
-    #     self.inputs = form_data
-    #     result = self.AlgorithmChosen(self.chosenAlgorithm)
-    #     self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
 
     def submit_form(self):
         # Collect the values from the form
@@ -271,8 +327,7 @@ class App(customtkinter.CTk):
 
         self.inputs = form_data
         result = self.AlgorithmChosen(self.chosenAlgorithm)
-        self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
-
+        # self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
 
     def create_models_view(self):
         if self.df is None:
@@ -343,6 +398,7 @@ class App(customtkinter.CTk):
 
         model_frame.grid_rowconfigure(1, weight=1)
         model_frame.grid_columnconfigure(0, weight=1)
+        
 
         return model_frame
 
@@ -368,15 +424,15 @@ class App(customtkinter.CTk):
     def show_features_view(self):
         self.targetExist = True
         self.target = self.selected_option.get()
-        print(self.target)
         if self.target:
             self.features_view = self.create_features_view()
             self.show_view(self.features_view)
         else:
-            # messagebox.showwarning("No Selection", "Please select a target column.")s
             self.target = "unkown"
             self.features_view = self.create_features_view()
             self.show_view(self.features_view)
+
+        print(self.target)
 
     def show_columns_form_view(self):
         self.selected_columns = [col for col, var in self.selected_options.items() if var.get()]
