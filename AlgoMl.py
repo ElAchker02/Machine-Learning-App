@@ -73,7 +73,7 @@ class AlgoML:
 
     
     # Function to apply machine learning algorithms based on the presence of a target variable
-    def apply_ml_algorithms(self,df,target, test_size=0.2):
+    def apply_ml_algorithms(self,df,target, test_size=0.3):
 
         results = {}
         # Check if the dataset has a target variable
@@ -322,39 +322,6 @@ class AlgoML:
         # Predict the target value using the trained model
         prediction = AlgoML.predict_with_model(model, form_input)
         return prediction
-
-    # Unsupervised
-    @staticmethod
-    def DBSCANClusteringModel(df, feat, eps=0.5, min_samples=5):
-        # Extract the features for clustering
-        X = df[feat]
-
-        # Standardize the features
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-
-        # Apply DBSCAN
-        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-        dbscan.fit(X_scaled)
-
-        # Get the cluster labels
-        labels = dbscan.labels_
-        
-        # Append the labels to the original dataframe
-        df['Cluster'] = labels
-
-        return df, dbscan, scaler
-
-    @staticmethod
-    def predict_with_model_DBSCAN(model, scaler, features):
-        # Standardize the input features
-        features_scaled = scaler.transform(np.array(features).reshape(1, -1))
-        
-        # Predict the cluster for the new features
-        prediction = model.fit_predict(features_scaled)
-        return prediction[0]
-
-    
 
     @staticmethod
     def predict_with_model(model, features):

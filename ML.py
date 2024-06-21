@@ -9,6 +9,7 @@ import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from sklearn.model_selection import train_test_split
 from Visualisation import DataVisualizerClass
+from AlgoMLU import Unsupervised
 
 
 class App(customtkinter.CTk):
@@ -31,6 +32,9 @@ class App(customtkinter.CTk):
         self.targetExist = False
         self.chosenAlgorithm = "Linear Regression"
         self.encoding_dict = {}
+        self.clustering_info = None
+        self.model = None
+        self.scaler = None
         
         
         # Configure grid layout for the main window
@@ -208,7 +212,7 @@ class App(customtkinter.CTk):
         button_submit.grid(row=(len(self.selected_columns) // 2) + 2, column=1, padx=10, pady=20, sticky="e")
 
         # Add label at the end of the form
-        self.prediction = customtkinter.CTkLabel(form_frame, text=f"Prediction of target {self.target} is ")
+        self.prediction = customtkinter.CTkLabel(form_frame, text="")
         self.prediction.grid(row=(len(self.selected_columns) // 2) + 3, column=0, columnspan=2, padx=10, pady=10, sticky="w")
 
 
@@ -255,6 +259,7 @@ class App(customtkinter.CTk):
         #     statistics_window.destroy()
 
         # statistics_window.protocol("WM_DELETE_WINDOW", on_close)
+
 
     def show_visualization(self, desc):
 
@@ -305,16 +310,8 @@ class App(customtkinter.CTk):
             case "K-Means":
                 pass
             case "DBSCAN":
-                # Apply DBSCAN clustering
-                clustered_df, dbscan_model, scaler = AlgoML.DBSCANClusteringModel(self.dfPreprocessed, self.selected_columns, eps=0.3, min_samples=2)
-                print(clustered_df['Cluster'])
-
-                # Predict the cluster for a new data point
-                inputs = [float(value) for value in self.inputs]
-                cluster_label = AlgoML.predict_with_model_DBSCAN(dbscan_model, scaler, inputs)
-                print(f"The input belongs to cluster: {cluster_label}")
-                
-                result = cluster_label
+                inputs = [self.inputs]
+                Unsupervised.apply_dbscan_and_show_results(self.dfPreprocessed,self.selected_columns,0.5,5,inputs)
             case "PCA Variance Explained":
                 pass
             case "t-SNE":
@@ -337,8 +334,9 @@ class App(customtkinter.CTk):
 
         self.inputs = form_data
         result = self.AlgorithmChosen(self.chosenAlgorithm)
-        # self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
-
+        if(self.target != "unkown"):
+            self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
+            
     def create_models_view(self):
         if self.df is None:
             self.show_upload_view()
