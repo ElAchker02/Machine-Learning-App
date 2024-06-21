@@ -147,11 +147,6 @@ class AlgoML:
             dbscan_score = silhouette_score(df, dbscan.labels_) if len(set(dbscan.labels_)) > 1 else -1
             results['DBSCAN'] = dbscan_score
             
-            hc = sch.linkage(df, method='ward')
-            hc_labels = sch.fcluster(hc, 3, criterion='maxclust')
-            hc_score = silhouette_score(df, hc_labels)
-            results['Hierarchical Clustering'] = hc_score
-            
             # Dimensionality reduction algorithms
             pca = PCA(n_components=2)
             pca_result = pca.fit_transform(df)

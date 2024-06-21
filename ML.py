@@ -17,9 +17,9 @@ class App(customtkinter.CTk):
         super().__init__()
 
         # configure window
-        self.title("Machine Learning Application")
+        self.title("DataNavigator")
         self.geometry(f"{1100}x{580}")
-
+        self.iconbitmap("machine-learning.ico")
         #Initialize Class
         self.algos = AlgoML()
 
@@ -46,7 +46,7 @@ class App(customtkinter.CTk):
         self.sidebar_frame = tk.Frame(self, bg="lightgray")
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
 
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=("Arial", 20, "bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="DataNavigator", font=("Arial", 20, "bold"))
         self.logo_label.pack(padx=20, pady=(20, 10))
 
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Data", command=self.show_upload_view)
@@ -260,6 +260,26 @@ class App(customtkinter.CTk):
 
         # statistics_window.protocol("WM_DELETE_WINDOW", on_close)
 
+    def apply_and_show_results(self):
+        try:
+            # Apply K-Means Clustering
+            result = Unsupervised.apply_kmeans_and_show_results(self, self.dfPreprocessed, self.selected_columns, n_clusters=3)
+            if result[0] is None:
+                return
+            self.dfPreprocessed, self.kmeans_model, self.scaler, self.clustering_info = result
+
+            # Predict clusters for input data
+            predictions = []
+            inputs = [self.inputs]
+            for input_data in inputs:
+                prediction = Unsupervised.predict_with_kmeans_model(self.kmeans_model, self.scaler, input_data)
+                predictions.append(prediction)
+
+            # Show clustering results
+            Unsupervised.show_clustering_results(self.dfPreprocessed, self.clustering_info, self.inputs, predictions)
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def show_visualization(self, desc):
 
@@ -308,15 +328,22 @@ class App(customtkinter.CTk):
             case "Random Forest Regressor":
                 result = AlgoML.RandomForestRegressionModel(self,self.dfPreprocessed,self.target,self.selected_columns,self.inputs)
             case "K-Means":
-                pass
+                self.apply_and_show_results()
             case "DBSCAN":
                 inputs = [self.inputs]
                 Unsupervised.apply_dbscan_and_show_results(self.dfPreprocessed,self.selected_columns,0.5,5,inputs)
             case "PCA Variance Explained":
-                pass
-            case "t-SNE":
-                pass
-        
+                try:
+                    # Apply PCA
+                    explained_variance, pca_model, scaler, transformed_inputs = Unsupervised.apply_pca_and_show_results(
+                        self.dfPreprocessed, self.selected_columns, self.inputs
+                    )
+
+                    # Show PCA results
+                    Unsupervised.show_pca_results(explained_variance, self.inputs, transformed_inputs)
+
+                except Exception as e:
+                    messagebox.showerror("Error", str(e))
         return result
 
     def submit_form(self):
