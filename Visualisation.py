@@ -11,10 +11,13 @@ class DataVisualizerClass(tk.Tk):
     def __init__(self):
         super().__init__()
 
-
     @staticmethod
-    def show_histograms_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def handle_close( window):
+        window.destroy()
+    
+    @staticmethod
+    def show_histograms_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
@@ -25,6 +28,7 @@ class DataVisualizerClass(tk.Tk):
         # Canvas and scrollbar for histograms
         canvas = tk.Canvas(histograms_window)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        histograms_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(histograms_window))
 
         scrollbar = ttk.Scrollbar(histograms_window, orient=tk.VERTICAL, command=canvas.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -35,7 +39,7 @@ class DataVisualizerClass(tk.Tk):
         canvas.create_window((0, 0), window=histograms_frame, anchor=tk.NW)
 
         # Preprocess data
-        self.df  =  dfP
+        self.df = dfP
 
         # Create histograms for each column
         num_columns = len(self.df.columns)
@@ -53,9 +57,9 @@ class DataVisualizerClass(tk.Tk):
             ax.grid(True)
 
             # Embedding matplotlib plot into tkinter
-            canvas = FigureCanvasTkAgg(fig, master=row_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side=tk.LEFT, padx=10, pady=10)
+            canvas_plot = FigureCanvasTkAgg(fig, master=row_frame)
+            canvas_plot.draw()
+            canvas_plot.get_tk_widget().pack(side=tk.LEFT, padx=10, pady=10)
 
         # Configure scrollbar and canvas
         histograms_frame.update_idletasks()
@@ -63,20 +67,21 @@ class DataVisualizerClass(tk.Tk):
         canvas.config(yscrollcommand=scrollbar.set)
 
     @staticmethod
-    def show_heatmap_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_heatmap_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
         # Create a new window for heatmap
         heatmap_window = tk.Toplevel(self)
         heatmap_window.title("Heatmap")
+        heatmap_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(heatmap_window))
 
         # Frame to contain the heatmap plot
         heatmap_frame = ttk.Frame(heatmap_window)
         heatmap_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Preprocess data (fill missing values and encode categorical variables if needed)
+        # Preprocess data
         self.df = dfP
 
         # Create heatmap
@@ -90,7 +95,7 @@ class DataVisualizerClass(tk.Tk):
         canvas = FigureCanvasTkAgg(fig, master=heatmap_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-    
+
     @staticmethod
     def show_pie_chart_view(self):
         if self.df is None or self.df.empty:
@@ -107,7 +112,8 @@ class DataVisualizerClass(tk.Tk):
         # Create a new window for Pie Charts
         pie_charts_window = tk.Toplevel(self)
         pie_charts_window.title("Pie Charts")
-        
+        pie_charts_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(pie_charts_window))
+
         # Iterate over each categorical column
         for col in categorical_columns:
             # Frame to contain the Pie Chart plot for each column
@@ -125,11 +131,10 @@ class DataVisualizerClass(tk.Tk):
             canvas_plot = FigureCanvasTkAgg(fig, master=pie_chart_frame)
             canvas_plot.draw()
             canvas_plot.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-            
 
     @staticmethod
-    def show_violin_plots_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_violin_plots_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
@@ -140,6 +145,7 @@ class DataVisualizerClass(tk.Tk):
         # Canvas and scrollbar for displaying plots
         canvas = tk.Canvas(violin_plots_window)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        violin_plots_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(violin_plots_window))
 
         scrollbar = ttk.Scrollbar(violin_plots_window, orient=tk.VERTICAL, command=canvas.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -185,14 +191,15 @@ class DataVisualizerClass(tk.Tk):
         toolbar.grid(row=num_rows, columnspan=num_plots_per_row, sticky='ew')
 
     @staticmethod
-    def show_bar_charts_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_bar_charts_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
         # Create a new window for bar charts
         bar_charts_window = tk.Toplevel(self)
         bar_charts_window.title("Bar Charts")
+        bar_charts_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(bar_charts_window))
 
         # Canvas and scrollbar for bar charts
         canvas = tk.Canvas(bar_charts_window)
@@ -235,14 +242,15 @@ class DataVisualizerClass(tk.Tk):
         canvas.config(yscrollcommand=scrollbar.set)
 
     @staticmethod
-    def show_box_plots_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_box_plots_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
         # Create a new window for box plots
         box_plots_window = tk.Toplevel(self)
         box_plots_window.title("Box Plots")
+        box_plots_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(box_plots_window))
 
         # Canvas and scrollbar for displaying plots
         canvas = tk.Canvas(box_plots_window)
@@ -291,14 +299,15 @@ class DataVisualizerClass(tk.Tk):
         toolbar.grid(row=num_rows, columnspan=num_plots_per_row, sticky='ew')
 
     @staticmethod
-    def show_pair_plot_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_pair_plot_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
         # Create a new window for pair plot
         pair_plot_window = tk.Toplevel(self)
         pair_plot_window.title("Pair Plot")
+        pair_plot_window.protocol("WM_DELETE_WINDOW", lambda: DataVisualizerClass.handle_close(pair_plot_window))
 
         # Canvas and scrollbars for displaying the plot
         canvas = tk.Canvas(pair_plot_window)
@@ -337,8 +346,8 @@ class DataVisualizerClass(tk.Tk):
         toolbar.pack(side=tk.TOP, fill=tk.X)
 
     @staticmethod
-    def show_scatter_plots_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_scatter_plots_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
@@ -399,8 +408,8 @@ class DataVisualizerClass(tk.Tk):
         toolbar.grid(row=num_rows, columnspan=num_plots_per_row, sticky='ew')
 
     @staticmethod
-    def show_line_plot_view(self,dfP):
-        if self.df is None or self.df.empty:
+    def show_line_plot_view(self, dfP):
+        if dfP is None or dfP.empty:
             messagebox.showwarning("Warning", "No dataset loaded!")
             return
 
