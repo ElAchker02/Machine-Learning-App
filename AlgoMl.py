@@ -19,31 +19,6 @@ class AlgoML:
         pass
 
     @staticmethod
-    # def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
-    #     # Initialize a dictionary to store original and encoded values
-    #     encoding_dict = {}
-
-    #     # Handle missing values
-    #     if handle_missing_values:
-    #         # Fill numerical columns with the mean
-    #         for col in df.select_dtypes(include=[np.number]).columns:
-    #             if df[col].isnull().sum() > 0:
-    #                 df[col] = df[col].fillna(df[col].mean())
-
-    #         # Fill categorical columns with the mode
-    #         for col in df.select_dtypes(include=[object]).columns:
-    #             if df[col].isnull().sum() > 0:
-    #                 df[col] = df[col].fillna(df[col].mode()[0])
-
-    #     # Encode categorical variables
-    #     if encode_categorical:
-    #         label_encoder = LabelEncoder()
-    #         for col in df.select_dtypes(include=['object']).columns:
-    #             df[col] = label_encoder.fit_transform(df[col])
-    #             # Store the original and encoded values in the dictionary
-    #             encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
-
-    #     return df, encoding_dict
     def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
             # Initialize a dictionary to store original and encoded values
             encoding_dict = {}
@@ -69,7 +44,43 @@ class AlgoML:
                     encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
 
             return df, encoding_dict
+    # @staticmethod
+    # def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
+    #     # Handle missing values
+    #     if handle_missing_values:
+    #         # Fill numerical columns with the mean
+    #         for col in df.select_dtypes(include=[np.number]).columns:
+    #             if df[col].isnull().sum() > 0:
+    #                 df[col] = df[col].fillna(df[col].mean())
 
+    #         # Fill categorical columns with the mode
+    #         for col in df.select_dtypes(include=[object]).columns:
+    #             if df[col].isnull().sum() > 0:
+    #                 df[col] = df[col].fillna(df[col].mode()[0])
+
+    #     # Encode categorical variables
+    #     if encode_categorical:
+    #         label_encoder = LabelEncoder()
+    #         for col in df.select_dtypes(include=['object']).columns:
+    #             df[col] = label_encoder.fit_transform(df[col])
+
+    #     return df
+
+    # @staticmethod
+    # def extract_encoding_dict(df):
+    #     if df is None:
+    #         raise ValueError("DataFrame cannot be None")
+        
+    #     encoding_dict = {}
+    #     label_encoder = LabelEncoder()
+
+    #     for col in df.select_dtypes(include=['object']).columns:
+    #         label_encoder.fit(df[col])
+    #         encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+    #         print(f"Encoded {col}: {encoding_dict[col]}")  # Debugging statement
+
+    #     print("Encoding dictionary:", encoding_dict)  # Debugging statement
+    #     return encoding_dict
 
     
     # Function to apply machine learning algorithms based on the presence of a target variable

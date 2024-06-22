@@ -54,8 +54,8 @@ class App(customtkinter.CTk):
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Data", command=self.show_upload_view)
         self.sidebar_button_1.pack(padx=20, pady=10, anchor="w")
 
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Show Statistics", command=self.show_statistics)
-        self.sidebar_button_2.pack(padx=20, pady=10, anchor="w")
+        # self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Show Statistics", command=self.show_statistics)
+        # self.sidebar_button_2.pack(padx=20, pady=10, anchor="w")
 
         # Create main content area
         self.main_content_frame = tk.Frame(self, bg="white")
@@ -181,6 +181,7 @@ class App(customtkinter.CTk):
         return checkbox_frame
 
     def create_columns_form_view(self):
+        
         form_frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent")
 
         # Title
@@ -190,8 +191,14 @@ class App(customtkinter.CTk):
         # Dictionary to store the entry widgets for each column
         self.entry_widgets = {}
 
+        # print("Encoding Dict at start of create_columns_form_view:", self.encoding_dict)
+        # self.dfPreprocessed = AlgoML.preprocess_data(self.df)
+        
         # Create form fields for each selected column
         if self.selected_columns:
+            # self.encoding_dict = AlgoML.extract_encoding_dict(self.df)
+            # dfp ,  self.encoding_dict = AlgoML.preprocess_data(self.df)
+            print("dict : ", self.encoding_dict)
             for i, column_name in enumerate(self.selected_columns):
                 row = (i // 2) + 1  # Determine the row for grid placement
                 column = i % 2      # Determine the column for grid placement
@@ -224,7 +231,7 @@ class App(customtkinter.CTk):
         # Add label at the end of the form
         self.prediction = customtkinter.CTkLabel(form_frame, text="")
         self.prediction.grid(row=(len(self.selected_columns) // 2) + 3, column=0, columnspan=2, padx=10, pady=10, sticky="w")
-
+        # print("Encoding Dict at end of create_columns_form_view:", self.encoding_dict)
 
 
         return form_frame
@@ -484,7 +491,7 @@ class App(customtkinter.CTk):
             header_label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
 
         i = 1
-        self.dfPreprocessed, encoding_dict = AlgoML.preprocess_data(self.df)
+        self.dfPreprocessed , self.encoding_dict= AlgoML.preprocess_data(self.df)
         results = AlgoML.apply_ml_algorithms(self, self.dfPreprocessed, self.target)
         for algo, score in results.items():
             model_number = f"Model #{i} : "
@@ -516,7 +523,11 @@ class App(customtkinter.CTk):
         button_prev = customtkinter.CTkButton(buttons_frame, text="Previous", command=self.show_features_view)
         button_prev.grid(row=0, column=0, padx=10)
 
-        return model_frame , encoding_dict
+        buttonStatistics = customtkinter.CTkButton(buttons_frame, text="Show Statistics", command=self.show_statistics)
+        buttonStatistics.grid(row=0, column=1, padx=10)
+
+
+        return model_frame 
 
 
     def toggle_select_all(self, select_all_var):
@@ -527,6 +538,7 @@ class App(customtkinter.CTk):
     def predict(self, model_name):
         self.chosenAlgorithm = model_name
         print(self.chosenAlgorithm)
+        print(self.encoding_dict)
         self.show_columns_form_view()
 
     def show_view(self, view):
@@ -559,14 +571,16 @@ class App(customtkinter.CTk):
     def show_columns_form_view(self):
         self.selected_columns = [col for col, var in self.selected_options.items() if var.get()]
         print("Selected columns:", self.selected_columns)
-        print(self.encoding_dict)
+        # print(self.encoding_dict)
         self.columns_form_view = self.create_columns_form_view()
         self.show_view(self.columns_form_view)
+        # print(self.encoding_dict)
 
     def show_models_view(self):
+        print(self.encoding_dict)
         # Check if at least one feature is selected
         if any(var.get() for var in self.selected_options.values()):
-            self.models_view , self.encoding_dict = self.create_models_view()
+            self.models_view = self.create_models_view()
             self.show_view(self.models_view)
         else:
             messagebox.showwarning("Warning", "Please select at least one feature!")
