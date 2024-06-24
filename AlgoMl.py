@@ -41,22 +41,6 @@ class AlgoML:
 
             return df
     
-    # @staticmethod
-    # def extract_encoding_dict( df):
-    #     if df is None:
-    #         raise ValueError("DataFrame cannot be None")
-        
-    #     encoding_dict = {}
-    #     label_encoder = LabelEncoder()
-
-    #     for col in df.select_dtypes(include=['object']).columns:
-    #         label_encoder.fit(df[col])
-    #         encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
-    #         print(f"Encoded {col}: {encoding_dict[col]}")  # Debugging statement
-
-    #     print("Encoding dictionary:", encoding_dict)  # Debugging statement
-    #     return encoding_dict
-    
     @staticmethod
     def extract_encoding_dict(df):
         if df is None:

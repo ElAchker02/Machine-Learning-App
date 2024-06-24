@@ -79,6 +79,7 @@ class App(customtkinter.CTk):
     def on_closing(self):
             # Perform any cleanup tasks here
         self.destroy()
+    
     def create_upload_view(self):
         frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent")
         frame.grid(row=0, column=0, sticky="nsew")  # Make the frame fill the available space
