@@ -28,12 +28,13 @@ class App(customtkinter.CTk):
         # Dataset
         self.df = None
         self.dfPreprocessed = None
+        self.ds = None
         self.target = ""
         self.selected_columns = []
         self.inputs = []
         self.targetExist = False
         self.chosenAlgorithm = "Linear Regression"
-        self.encoding_dict = {}
+        self.dictionary = {}
         self.clustering_info = {}
         self.model = None
         self.scaler = None
@@ -102,6 +103,7 @@ class App(customtkinter.CTk):
         if file_path:
             try:
                 self.df = pd.read_csv(file_path)
+                self.ds = pd.read_csv(file_path)
                 self.show_target_view()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load dataset: {e}")
@@ -190,15 +192,9 @@ class App(customtkinter.CTk):
 
         # Dictionary to store the entry widgets for each column
         self.entry_widgets = {}
-
-        # print("Encoding Dict at start of create_columns_form_view:", self.encoding_dict)
-        # self.dfPreprocessed = AlgoML.preprocess_data(self.df)
         
         # Create form fields for each selected column
         if self.selected_columns:
-            # self.encoding_dict = AlgoML.extract_encoding_dict(self.df)
-            # dfp ,  self.encoding_dict = AlgoML.preprocess_data(self.df)
-            print("dict : ", self.encoding_dict)
             for i, column_name in enumerate(self.selected_columns):
                 row = (i // 2) + 1  # Determine the row for grid placement
                 column = i % 2      # Determine the column for grid placement
@@ -206,10 +202,10 @@ class App(customtkinter.CTk):
                 # Create label and entry widgets
                 label = customtkinter.CTkLabel(form_frame, text=column_name)
                 label.grid(row=row, column=column*2, padx=10, pady=5, sticky="e")
-
-                if column_name in self.encoding_dict:
+                
+                if column_name in self.dictionary:
                     # Create a dropdown for categorical columns with readable labels
-                    values = list(self.encoding_dict[column_name].keys())
+                    values = list(self.dictionary[column_name].keys())
                     entry = customtkinter.CTkComboBox(form_frame, values=values)
                 else:
                     # Create an entry widget for numerical columns
@@ -231,7 +227,6 @@ class App(customtkinter.CTk):
         # Add label at the end of the form
         self.prediction = customtkinter.CTkLabel(form_frame, text="")
         self.prediction.grid(row=(len(self.selected_columns) // 2) + 3, column=0, columnspan=2, padx=10, pady=10, sticky="w")
-        # print("Encoding Dict at end of create_columns_form_view:", self.encoding_dict)
 
 
         return form_frame
@@ -362,11 +357,11 @@ class App(customtkinter.CTk):
         # Collect the values from the form
         form_data = []
         for col in self.selected_columns:
-            if col in self.encoding_dict:
+            if col in self.dictionary:
                 # If the column is categorical, get the selected readable value from the dropdown
                 selected_value = self.entry_widgets[col].get()
                 # Convert the readable value to the corresponding numerical value
-                form_data.append(self.encoding_dict[col][selected_value])
+                form_data.append(self.dictionary[col][selected_value])
             else:
                 # Otherwise, get the text value from the entry widget and convert to float
                 form_data.append(float(self.entry_widgets[col].get()))
@@ -374,83 +369,10 @@ class App(customtkinter.CTk):
         self.inputs = form_data
         result = self.AlgorithmChosen(self.chosenAlgorithm)
         if(self.target != "unkown"):
-            self.prediction.configure(text=f"Prediction of target {self.target} is {result[0]}")
-            
-    # def create_models_view(self):
-    #     if self.df is None:
-    #         self.show_upload_view()
-    #         return
-
-    #     model_frame = customtkinter.CTkFrame(self.main_content_frame, fg_color="transparent")
-    #     model_frame.grid(row=0, column=0, sticky="nsew")
-
-    #     # Title
-    #     title_label = customtkinter.CTkLabel(model_frame, text="Dataset and Model Information", font=("Helvetica", 20, "bold"))
-    #     title_label.grid(row=0, column=0, columnspan=3, pady=10)
-
-    #     # Create dataset table
-    #     dataset_table_frame = customtkinter.CTkFrame(model_frame, fg_color="transparent")
-    #     dataset_table_frame.grid(row=1, column=0, columnspan=3, pady=10, padx=10, sticky="nsew")
-
-    #     dataset_table = ttk.Treeview(dataset_table_frame, show="headings")
-    #     dataset_table["columns"] = list(self.df.columns)
-
-    #     for col in self.df.columns:
-    #         dataset_table.heading(col, text=col)
-    #         dataset_table.column(col, anchor="center", width=100)
-
-    #     for index, row in self.df.iterrows():
-    #         if(index == 50):
-    #             break
-    #         dataset_table.insert("", "end", values=list(row))
-
-    #     dataset_table.grid(row=0, column=0, sticky="nsew")
-
-    #     # Create model statistics table with custom layout
-    #     model_table_frame = customtkinter.CTkFrame(model_frame, fg_color="transparent")
-    #     model_table_frame.grid(row=2, column=0, columnspan=3, pady=20, padx=10, sticky="nsew")
-
-    #     # Add header for the model table
-    #     # headers = ["Model", "Accuracy", "Model Loss"]
-    #     headers = ["Model", "Action", "Accuracy"]
-
-    #     for col, header in enumerate(headers):
-    #         header_label = customtkinter.CTkLabel(model_table_frame, text=header, font=("Helvetica", 12, "bold"))
-    #         header_label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
-
-    #     i = 1
-    #     self.dfPreprocessed , self.encoding_dict = AlgoML.preprocess_data(self.df)
-    #     print(self.encoding_dict)
-    #     results = AlgoML.apply_ml_algorithms(self,self.dfPreprocessed,self.target)
-    #     for algo, score in results.items():
-    #         model_number = f"Model #{i} : "
-    #         model_name = f"{algo}"
-    #         target_name = self.target if hasattr(self, 'target') else "Not Set"
-    #         model_label = f"{model_number}{model_name}\n- Target: {target_name}"
-    #         accuracy = f"{round(score*100,2)}%"
-    #         #model_loss = f"{i * 0.1:.2f}"
-
-    #         # Add model label
-    #         model_label_widget = customtkinter.CTkLabel(model_table_frame, text=model_label)
-    #         model_label_widget.grid(row=i, column=0, padx=10, pady=5, sticky="w")
-
-    #         # Add predict button
-    #         predict_button = customtkinter.CTkButton(model_table_frame, text="PREDICT", command=lambda m=model_name: self.predict(m))
-    #         predict_button.grid(row=i, column=1, padx=10, pady=5, sticky="w")
-
-    #         # Add model loss label
-    #         loss_label = customtkinter.CTkLabel(model_table_frame, text=accuracy)
-    #         loss_label.grid(row=i, column=2, padx=10, pady=5, sticky="w")
-    #         i = i +1
-
-    #     model_frame.grid_rowconfigure(1, weight=1)
-    #     model_frame.grid_columnconfigure(0, weight=1)
-        
-
-    #     return model_frame
+            self.prediction.configure(text=f"Prediction of target {self.target} is {round(result[0],2)}")
 
     def create_models_view(self):
-        if self.df is None:
+        if self.ds is None:
             self.show_upload_view()
             return
 
@@ -468,11 +390,11 @@ class App(customtkinter.CTk):
         dataset_table = ttk.Treeview(dataset_table_frame, show="headings")
         dataset_table["columns"] = list(self.df.columns)
 
-        for col in self.df.columns:
+        for col in self.ds.columns:
             dataset_table.heading(col, text=col)
             dataset_table.column(col, anchor="center", width=100)
 
-        for index, row in self.df.iterrows():
+        for index, row in self.ds.iterrows():
             if index == 50:
                 break
             dataset_table.insert("", "end", values=list(row))
@@ -491,7 +413,7 @@ class App(customtkinter.CTk):
             header_label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
 
         i = 1
-        self.dfPreprocessed , self.encoding_dict= AlgoML.preprocess_data(self.df)
+        self.dfPreprocessed = AlgoML.preprocess_data(self.df)
         results = AlgoML.apply_ml_algorithms(self, self.dfPreprocessed, self.target)
         for algo, score in results.items():
             model_number = f"Model #{i} : "
@@ -529,7 +451,6 @@ class App(customtkinter.CTk):
 
         return model_frame 
 
-
     def toggle_select_all(self, select_all_var):
         select_all_state = select_all_var.get()
         for var in self.selected_options.values():
@@ -537,8 +458,7 @@ class App(customtkinter.CTk):
 
     def predict(self, model_name):
         self.chosenAlgorithm = model_name
-        print(self.chosenAlgorithm)
-        print(self.encoding_dict)
+        self.dictionary = AlgoML.extract_encoding_dict(self.ds)
         self.show_columns_form_view()
 
     def show_view(self, view):
@@ -569,15 +489,12 @@ class App(customtkinter.CTk):
         print(self.target)
 
     def show_columns_form_view(self):
-        self.selected_columns = [col for col, var in self.selected_options.items() if var.get()]
-        print("Selected columns:", self.selected_columns)
-        # print(self.encoding_dict)
         self.columns_form_view = self.create_columns_form_view()
         self.show_view(self.columns_form_view)
-        # print(self.encoding_dict)
 
     def show_models_view(self):
-        print(self.encoding_dict)
+        self.selected_columns = [col for col, var in self.selected_options.items() if var.get()]
+        print("Selected columns:", self.selected_columns)
         # Check if at least one feature is selected
         if any(var.get() for var in self.selected_options.values()):
             self.models_view = self.create_models_view()
