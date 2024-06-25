@@ -20,6 +20,8 @@ class AlgoML:
 
     @staticmethod
     def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
+            # Initialize a dictionary to store original and encoded values
+            encoding_dict = {}
 
             # Handle missing values
             if handle_missing_values:
@@ -38,24 +40,27 @@ class AlgoML:
                 label_encoder = LabelEncoder()
                 for col in df.select_dtypes(include=['object']).columns:
                     df[col] = label_encoder.fit_transform(df[col])
+                    # Store the original and encoded values in the dictionary
+                    encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
 
-            return df
+            return df, encoding_dict
     
-    @staticmethod
-    def extract_encoding_dict(df):
-        if df is None:
-            raise ValueError("DataFrame cannot be None")
-        encoding_dict = {}
-        label_encoder = LabelEncoder()
+    # @staticmethod
+    # def extract_encoding_dict( df):
+    #     if df is None:
+    #         raise ValueError("DataFrame cannot be None")
+        
+    #     encoding_dict = {}
+    #     label_encoder = LabelEncoder()
 
-        for col in df.select_dtypes(include=['object']).columns:
-            
-            label_encoder.fit(df[col])
-            encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+    #     for col in df.select_dtypes(include=['object']).columns:
+    #         label_encoder.fit(df[col])
+    #         encoding_dict[col] = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+    #         print(f"Encoded {col}: {encoding_dict[col]}")  # Debugging statement
 
-        print("Encoding dictionary:", encoding_dict)  # Debugging statement
-        return encoding_dict
-
+    #     print("Encoding dictionary:", encoding_dict)  # Debugging statement
+    #     return encoding_dict
+    
     # @staticmethod
     # def preprocess_data(df, handle_missing_values=True, encode_categorical=True):
     #     # Handle missing values

@@ -55,9 +55,6 @@ class App(customtkinter.CTk):
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Data", command=self.show_upload_view)
         self.sidebar_button_1.pack(padx=20, pady=10, anchor="w")
 
-        # self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Show Statistics", command=self.show_statistics)
-        # self.sidebar_button_2.pack(padx=20, pady=10, anchor="w")
-
         # Create main content area
         self.main_content_frame = tk.Frame(self, bg="white")
         self.main_content_frame.grid(row=0, column=1, sticky="nsew")
@@ -67,6 +64,7 @@ class App(customtkinter.CTk):
 
         self.main_content_frame.grid_rowconfigure(0, weight=1)
         self.main_content_frame.grid_columnconfigure(0, weight=1)
+
         # Initialize the views
         self.upload_view = self.create_upload_view()
         self.columns_form_view = self.create_columns_form_view()
@@ -218,12 +216,16 @@ class App(customtkinter.CTk):
                 self.entry_widgets[column_name] = entry
 
         # Button to go to the previous view
-        button_prev = customtkinter.CTkButton(form_frame, text="Prev", command=self.show_models_view)
+        button_prev = customtkinter.CTkButton(form_frame, text="ReUpload", command=self.show_upload_view)
         button_prev.grid(row=(len(self.selected_columns) // 2) + 2, column=0, padx=10, pady=20, sticky="w")
 
         # Button to submit the form
         button_submit = customtkinter.CTkButton(form_frame, text="Submit", command=self.submit_form)
         button_submit.grid(row=(len(self.selected_columns) // 2) + 2, column=1, padx=10, pady=20, sticky="e")
+        
+        # Button to show statistics
+        buttonStatistics = customtkinter.CTkButton(form_frame, text="Show Statistics", command=self.show_statistics)
+        buttonStatistics.grid(row=(len(self.selected_columns) // 2) + 2, column=2, padx=10, pady=20, sticky="e")
 
         # Add label at the end of the form
         self.prediction = customtkinter.CTkLabel(form_frame, text="")
@@ -249,7 +251,6 @@ class App(customtkinter.CTk):
             ("Box Plot", "Displays the distribution and outliers of numerical columns."),
             ("Scatter Plot", "Shows the relationship between two columns."),
             ("Pair Plot", "Displays pairwise relationships and distributions for all columns."),
-            ("Pie Chart", "Displays the percentage distribution of categories in a categorical column."),
             ("Heatmap", "Displays the correlation between numerical columns."),
             ("Line Plot", "Shows the trend of numerical columns over a continuous interval."),
             ("Violin Plot", "Displays the distribution of numerical data across different categories.")
@@ -354,23 +355,52 @@ class App(customtkinter.CTk):
                     messagebox.showerror("Error", str(e))
         return result
 
+    # def submit_form(self):
+    #     # Collect the values from the form
+    #     form_data = []
+    #     for col in self.selected_columns:
+    #         if col in self.dictionary:
+    #             # If the column is categorical, get the selected readable value from the dropdown
+    #             selected_value = self.entry_widgets[col].get()
+    #             # Convert the readable value to the corresponding numerical value
+    #             form_data.append(self.dictionary[col][selected_value])
+    #         else:
+    #             # Otherwise, get the text value from the entry widget and convert to float
+    #             form_data.append(float(self.entry_widgets[col].get()))
+
+    #     self.inputs = form_data
+    #     result = self.AlgorithmChosen(self.chosenAlgorithm)
+    #     if(self.target != "unkown"):
+    #         self.prediction.configure(text=f"Prediction of target {self.target} is {round(result[0],2)}")
+
     def submit_form(self):
-        # Collect the values from the form
         form_data = []
         for col in self.selected_columns:
             if col in self.dictionary:
                 # If the column is categorical, get the selected readable value from the dropdown
                 selected_value = self.entry_widgets[col].get()
+                if not selected_value:
+                    tk.messagebox.showerror("Input Error", f"Field for {col} cannot be empty.")
+                    return
                 # Convert the readable value to the corresponding numerical value
                 form_data.append(self.dictionary[col][selected_value])
             else:
                 # Otherwise, get the text value from the entry widget and convert to float
-                form_data.append(float(self.entry_widgets[col].get()))
+                text_value = self.entry_widgets[col].get()
+                if not text_value:
+                    tk.messagebox.showerror("Input Error", f"Field for {col} cannot be empty.")
+                    return
+                try:
+                    form_data.append(float(text_value))
+                except ValueError:
+                    tk.messagebox.showerror("Input Error", f"Value for {col} must be a numeric type.")
+                    return
 
         self.inputs = form_data
         result = self.AlgorithmChosen(self.chosenAlgorithm)
-        if(self.target != "unkown"):
-            self.prediction.configure(text=f"Prediction of target {self.target} is {round(result[0],2)}")
+        if self.target != "unknown":
+            self.prediction.configure(text=f"Prediction of target {self.target} is {round(result[0], 2)}")
+
 
     def create_models_view(self):
         if self.ds is None:
@@ -414,7 +444,7 @@ class App(customtkinter.CTk):
             header_label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
 
         i = 1
-        self.dfPreprocessed = AlgoML.preprocess_data(self.df)
+        self.dfPreprocessed , dict = AlgoML.preprocess_data(self.df)
         results = AlgoML.apply_ml_algorithms(self, self.dfPreprocessed, self.target)
         for algo, score in results.items():
             model_number = f"Model #{i} : "
@@ -459,7 +489,7 @@ class App(customtkinter.CTk):
 
     def predict(self, model_name):
         self.chosenAlgorithm = model_name
-        self.dictionary = AlgoML.extract_encoding_dict(self.ds)
+        df ,self.dictionary = AlgoML.preprocess_data(self.ds)
         self.show_columns_form_view()
 
     def show_view(self, view):
