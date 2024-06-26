@@ -92,7 +92,7 @@ class App(customtkinter.CTk):
         title_label.grid(row=0, column=0, pady=10, sticky="n")
 
         # Upload button
-        upload_button = customtkinter.CTkButton(frame, text="Upload Dataset (Excel/CSV)", font=("Helvetica", 20, "bold"), command=self.upload_dataset)
+        upload_button = customtkinter.CTkButton(frame, text="Upload Dataset", font=("Helvetica", 20, "bold"), command=self.upload_dataset)
         upload_button.grid(row=1, column=0, padx=10, pady=10, sticky="n")
 
         return frame
