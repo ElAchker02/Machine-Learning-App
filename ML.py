@@ -38,6 +38,7 @@ class App(customtkinter.CTk):
         self.clustering_info = {}
         self.model = None
         self.scaler = None
+        #hhhhhh
         
         
         # Configure grid layout for the main window
